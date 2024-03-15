@@ -3,5 +3,5 @@
 > https://paperswithcode.com/method/efficientnetv2
 ## Model Benchmark
 
-<p align="center">
-    <img src="/assets/EfficientNetV2_benchmark.png">
+
+![API key warning messsage](assets/EfficientNetV2_benchmark.png)
