@@ -1,0 +1,6 @@
+streamlit
+tensorflow
+Pillow
+numpy
+tensorflow-hub
+Pillow
