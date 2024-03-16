@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow_hub as hub
 import streamlit as st
 import os
 
@@ -18,16 +17,25 @@ infer = loaded_model.signatures["serving_default"]
 
 
 def process_and_predict(image):
-    img = image.convert("RGB").resize((224, 224))  # Convert image to RGB and resize
+    img = image.convert("RGB").resize((224, 224))  # Ensure image is in RGB and resize
     img_tensor = img_to_array(img)
-    img_tensor = np.expand_dims(img_tensor, axis=0)  # Shape -> (1, 224, 224, 3)
-    img_tensor = tf.convert_to_tensor(img_tensor)  # Convert to Tensor
-    img_tensor /= 255.0  # Normalize the image similarly to the model's training
+    img_tensor = np.expand_dims(
+        img_tensor, axis=0
+    )  # Convert to tensor and add batch dimension
+    img_tensor = tf.convert_to_tensor(img_tensor)  # Ensure tensor type
+    img_tensor /= 255.0  # Normalize
+
+    # Use a placeholder for the status
+    status_text = st.empty()
+    status_text.text("Processing...")
 
     pred = infer(tf.constant(img_tensor))[
         list(infer.structured_outputs.keys())[0]
     ].numpy()
     pred_class = class_names[np.argmax(pred)]
+
+    status_text.text("")
+    st.success("Classification successful!")
     return pred_class
 
 
@@ -37,6 +45,7 @@ st.write(
 )
 
 uploaded_image = st.sidebar.file_uploader("Choose an image...", type=["jpg", "png"])
+display_size = 100
 
 sample_images_dir = "assets/sample_image"  # Ensure this directory path is correct
 sample_images = os.listdir(sample_images_dir)
@@ -44,15 +53,15 @@ selected_sample = st.selectbox("Or choose a sample image:", sample_images)
 
 if st.button("Classify Selected Sample"):
     image_path = os.path.join(sample_images_dir, selected_sample)
-    image = Image.open(image_path)
+    image = Image.open(image_path).convert("RGB")
     st.image(image, caption="Selected Sample Image", use_column_width=True)
     st.write("Classifying...")
     predicted_class = process_and_predict(image)
     st.write(f"Predicted Class: {predicted_class}")
 
 if uploaded_image is not None:
-    image = Image.open(uploaded_image)
+    image = Image.open(uploaded_image).convert("RGB")
     st.image(image, caption="Uploaded Image", use_column_width=True)
     st.write("Classifying...")
     predicted_class = process_and_predict(image)
-    st.write(f"Predicted Class: {predicted_class}")
+    st.success(f"Predicted Class: {predicted_class}")
